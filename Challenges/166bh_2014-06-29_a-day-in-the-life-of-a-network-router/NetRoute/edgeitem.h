@@ -2,6 +2,7 @@
 #define EDGEITEM_H
 
 #include <QtGui/QFont>
+#include <QtGui/QPen>
 #include <QtWidgets/QGraphicsObject>
 
 class NodeItem;
@@ -36,8 +37,15 @@ public:
     void setFont (QFont font);
     void resetFont ();
 
+    QPen emphasisPen() const { return m_emphPen; }
+    void setEmphasisPen(QPen emphPen);
+    void resetEmphasisPen();
+
     bool isArrowheadVisible() const { return m_arrowhead; }
     void setArrowheadVisible(bool visible);
+
+    bool isEmphasised() const { return m_emphasised; }
+    void setEmphasised(bool emph);
 
     virtual int type () const { return Type; }
 
@@ -55,12 +63,14 @@ private:
 
 private:
     QFont       m_font;
+    QPen        m_emphPen;
     QLineF      m_line;
     QRectF      m_labelRect;
     NodeItem*   m_startNode;
     NodeItem*   m_endNode;
     int         m_weight;
     bool        m_arrowhead;
+    bool        m_emphasised;
 };
 
 #endif // EDGEITEM_H

@@ -15,13 +15,14 @@ EdgeItem::EdgeItem (NodeItem* start /* = NULL */, NodeItem* end /* = NULL */)
     , m_endNode (NULL)
     , m_weight (0)
     , m_arrowhead (false)
+    , m_emphasised (false)
 {
     resetFont();
+    resetEmphasisPen();
 
-    //m_startNode->addEdge (this);
-    //m_endNode->addEdge (this);
     setStartNode (start);
     setEndNode (end);
+    setZValue(100.0f);
 
     setCacheMode (QGraphicsItem::NoCache);
     setAcceptedMouseButtons (Qt::NoButton);
@@ -62,15 +63,36 @@ void EdgeItem::setWeight(int weight)
     }
 }
 
-void EdgeItem::setFont (QFont font)
-{
-    m_font = font;
-    update();
-}
-
 void EdgeItem::setArrowheadVisible(bool visible)
 {
     m_arrowhead = visible;
+    update();
+}
+
+void EdgeItem::setEmphasised(bool emph)
+{
+    m_emphasised = emph;
+    update();
+}
+
+void EdgeItem::setEmphasisPen(QPen emphPen)
+{
+    m_emphPen = emphPen;
+
+    if (m_emphasised) { 
+        update();
+    }
+}
+
+void EdgeItem::resetEmphasisPen()
+{
+    QPen p(QBrush(QColor(Qt::yellow)), 12.0f, Qt::SolidLine, Qt::RoundCap);
+    m_emphPen = p;
+}
+
+void EdgeItem::setFont (QFont font)
+{
+    m_font = font;
     update();
 }
 
@@ -116,6 +138,12 @@ void EdgeItem::adjust ()
 void EdgeItem::paint (QPainter* painter, const QStyleOptionGraphicsItem* option,
     QWidget* widget /* = NULL */)
 {
+    // Draw the emphasis line
+    if (m_emphasised) {
+        painter->setPen(m_emphPen);
+        painter->drawLine(m_line);
+    }
+
     // draw the line
     QPen p (Qt::blue, LineWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
     painter->setPen (p);

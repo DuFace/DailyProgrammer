@@ -4,13 +4,17 @@
 #include "EdgeItem.h"
 #include "NodeItem.h"
 
-const float NodeItem::Radius = 20.0f;
-const float NodeItem::Border = 2.0f;
+const float NodeItem::Radius    = 20.0f;
+const float NodeItem::Border    =  2.0f;
+const float NodeItem::EmphWidth = 10.0f;
+
 
 NodeItem::NodeItem(QGraphicsItem* parent /* = NULL */)
     : QGraphicsObject(parent)
+    , m_emphasised(false)
 {
     resetBackground();
+    resetEmphasisBrush();
     resetBorderPen();
     resetSelectionPen();
     resetTextPen();
@@ -20,6 +24,7 @@ NodeItem::NodeItem(QGraphicsItem* parent /* = NULL */)
     setFlag(QGraphicsItem::ItemSendsScenePositionChanges);
     setFlag(QGraphicsItem::ItemIsSelectable);
     setPos(0, 0);
+    setZValue(200.0f);
 }
 
 NodeItem::~NodeItem()
@@ -38,6 +43,23 @@ void NodeItem::setBackground (QBrush brush)
 {
     m_brush = brush;
     invalidate ();
+}
+
+void NodeItem::setEmphasisBrush(QBrush brush)
+{
+    m_emphBrush = brush;
+
+    if (m_emphasised) {
+        invalidate();
+    }
+}
+
+void NodeItem::resetEmphasisBrush()
+{
+    QRadialGradient g(0, 0, Radius + 2*EmphWidth);
+    g.setColorAt(0.50f, QColor(Qt::gray));
+    g.setColorAt(0.75f, QColor(255, 255, 255, 0));
+    m_emphBrush = g;
 }
 
 void NodeItem::setBorderPen (QPen pen)
@@ -119,6 +141,17 @@ void NodeItem::paint (QPainter* painter, const QStyleOptionGraphicsItem* option,
     QWidget* widget /* = NULL */)
 {
     QRectF rect (-Radius, -Radius, 2*Radius, 2*Radius);
+
+    // Draw the emphasis
+    if (m_emphasised) {
+        QRectF rcEmph = rect.adjusted(-EmphWidth, -EmphWidth,
+            EmphWidth, EmphWidth);
+
+        // Draw the emphasis background
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(m_emphBrush);
+        painter->drawEllipse(rcEmph);
+    }
 
     // Draw the background and border
     painter->setBrush (m_brush);

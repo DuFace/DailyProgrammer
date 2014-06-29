@@ -11,9 +11,14 @@ class EdgeItem;
 class NodeItem : public QGraphicsObject
 {
     Q_OBJECT
-    Q_PROPERTY(QBrush background READ background WRITE setBackground RESET resetBackground)
-    Q_PROPERTY(QPen borderPen READ borderPen WRITE setBorderPen RESET resetBorderPen)
-    Q_PROPERTY(QPen selectionPen READ selectionPen WRITE setSelectionPen RESET resetSelectionPen)
+    Q_PROPERTY(QBrush background READ background WRITE setBackground 
+        RESET resetBackground)
+    Q_PROPERTY(QBrush emphasisBrush READ emphasisBrush WRITE setEmphasisBrush
+        RESET resetEmphasisBrush)
+    Q_PROPERTY(QPen borderPen READ borderPen WRITE setBorderPen
+        RESET resetBorderPen)
+    Q_PROPERTY(QPen selectionPen READ selectionPen WRITE setSelectionPen
+        RESET resetSelectionPen)
     Q_PROPERTY(QPen textPen READ textPen WRITE setTextPen RESET resetTextPen)
     Q_PROPERTY(QFont font READ font WRITE setFont RESET resetFont)
     Q_PROPERTY(QString text READ text WRITE setText)
@@ -24,6 +29,7 @@ public:
 
     static const float Radius;
     static const float Border;
+    static const float EmphWidth;
 
     enum { Type = UserType + 1 };
 
@@ -53,6 +59,13 @@ public:
     QString text () const { return m_text; }
     void setText (const QString& text);
 
+    QBrush emphasisBrush() const { return m_emphBrush; }
+    void setEmphasisBrush(QBrush brush);
+    void resetEmphasisBrush();
+
+    bool isEmphasised() const { return m_emphasised; }
+    void setEmphasised(bool emph) { m_emphasised = emph; }
+
     virtual int type () const { return Type; }
     virtual QRectF boundingRect () const;
 
@@ -79,10 +92,12 @@ protected:
 private:
     QList<EdgeItem*>    m_edges;
     QBrush              m_brush;
+    QBrush              m_emphBrush;
     QPen                m_penBorder;
     QPen                m_penSelect;
     QPen                m_penText;
     QFont               m_font;
+    bool                m_emphasised;
     QString             m_text;
 };
 
