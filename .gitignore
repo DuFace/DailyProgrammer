@@ -1,0 +1,17 @@
+# VisualStudio cruft
+*.opensdf
+*.sdf
+*.suo
+*.exe
+*.ilk
+*.pdb
+*.tlog
+*.lastbuildstate
+
+# General tat
+*.obj
+*.log
+*.user
+
+# Qt stuff
+**/GeneratedFiles/*
