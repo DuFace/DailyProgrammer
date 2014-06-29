@@ -46,6 +46,9 @@ ControlsDockWidget::ControlsDockWidget(MainWindow* parent) :
         &ControlsDockWidget::problemSpecChanged);
     connect(this, &ControlsDockWidget::parseRequested, parent,
         &MainWindow::parseAndRouteNetwork);
+
+    // Finally, check the clipboard for data
+    clipboardDataChanged();
 }
 
 ControlsDockWidget::~ControlsDockWidget()
