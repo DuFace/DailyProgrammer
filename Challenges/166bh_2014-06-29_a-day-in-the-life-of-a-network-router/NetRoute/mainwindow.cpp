@@ -253,6 +253,11 @@ void MainWindow::parseAndRouteNetwork(const QString& description)
     // Clear the existing graph and scene
     clearNetwork();
 
+    // Split into lines
+    /*QStringList lines = description.split(QRegExp("[\\n|\\r]"),
+        QString::SkipEmptyParts);
+    int nodeCount = lines[0].toInt();*/
+
     // Create some nodes
     for (int i = 0; i < 10; ++i) {
         NodeItem* node = new NodeItem;
@@ -275,6 +280,7 @@ void MainWindow::parseAndRouteNetwork(const QString& description)
         EdgeItem* edge = new EdgeItem;
         edge->setStartNode(m_graph[vStart].item);
         edge->setEndNode(m_graph[vEnd].item);
+        edge->setWeight(qrand() % 16);
         m_graphScene->addItem(edge);
 
         // Add it to the graph
