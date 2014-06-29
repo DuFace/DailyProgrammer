@@ -1,3 +1,5 @@
+#include <queue>
+
 #include <QtCore/QDateTime>
 #include <QtCore/QTimer>
 #include <QtOpenGL/QGLWidget>
@@ -15,8 +17,6 @@ typedef boost::detail::constant_value_property_map<double>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , m_highlightStartNode(true)
-    , m_highlightEndNode(true)
     , m_highlightPath(true)
 {
     // Set up the general UI stuff
@@ -77,22 +77,32 @@ MainWindow::~MainWindow()
 // Properties
 bool MainWindow::highlightStartNode() const
 {
-    return m_highlightStartNode;
+    if (m_routeStart) { 
+        return m_routeStart->isEmphasised();
+    }
+    return false;
 }
 
 void MainWindow::setHighlightStartNode(bool highlight)
 {
-    m_highlightStartNode = highlight;
+    if (m_routeStart) {
+        m_routeStart->setEmphasised(highlight);
+    }
 }
 
 bool MainWindow::highlightEndNode() const
 {
-    return m_highlightEndNode;
+    if (m_routeEnd) {
+        return m_routeEnd->isEmphasised();
+    }
+    return false;
 }
 
 void MainWindow::setHighlightEndNode(bool highlight)
 {
-    m_highlightEndNode = highlight;
+    if (m_routeEnd) {
+        m_routeEnd->setEmphasised(highlight);
+    }
 }
 
 bool MainWindow::highlightPath() const
@@ -103,6 +113,12 @@ bool MainWindow::highlightPath() const
 void MainWindow::setHighlightPath(bool highlight)
 {
     m_highlightPath = highlight;
+
+    QListIterator<EdgeItem*> i(m_route);
+    while (i.hasNext()) {
+        EdgeItem* edge = i.next();
+        edge->setEmphasised(highlight);
+    }
 }
 
 // Logging functions
@@ -248,13 +264,47 @@ void MainWindow::applySpringLayout()
 // Network specification stuff
 void MainWindow::parseAndRouteNetwork(const QString& description)
 {
+    // Attempt to build the graph
+    int buildResult = buildNetwork(description);
+    if (buildResult < 0) {
+        // Error occurred; just clear everything and abort
+        clearNetwork();
+        return;
+    }
+
+    // Load complete, lay it out
+    if ((buildResult & WarningAbort) == 0) {
+        postInfoMessage("Laying out graph...");
+        applySpringLayout();
+        postSuccessMessage("Graph loaded successfully!");
+
+        // Extract the start and end points
+        if (buildResult == Success) {
+            postInfoMessage("Beginning routing step...");
+            routeNetwork();
+        } else {
+            // Make sure the route does not exist
+            m_routeStart = m_routeEnd = NULL;
+            m_route.clear();
+
+            // Inform the user
+            postErrorMessage("Skipping routing step due to warnings.");
+        }
+    }
+
+}
+
+int MainWindow::buildNetwork(const QString& description)
+{
+    int result = Success;
+
     // Split into lines
     QStringList lines = description.split(QRegExp("[\\n|\\r]"),
         QString::SkipEmptyParts);
     if (lines.isEmpty()) {
         postErrorMessage("Problem specification is empty after whitespace "
             "removed!");
-        return;
+        return ErrorEmpty;
     }
 
     // Validate the length of the specification
@@ -266,7 +316,7 @@ void MainWindow::parseAndRouteNetwork(const QString& description)
         postErrorMessage(QString("Expecting %1 lines in specification; read %2")
             .arg(nodeCount + 2)
             .arg(lines.length()));
-        return;
+        return ErrorSpecTooSmall;
     }
 
     // Clear the existing graph and scene
@@ -279,7 +329,7 @@ void MainWindow::parseAndRouteNetwork(const QString& description)
             "be discared.  Continue?");
         if (response == QMessageBox::No) {
             postErrorMessage("Aborted by user.");
-            return;
+            return WarningAbort;
         }
 
         postInfoMessage("Discarding network.");
@@ -293,7 +343,8 @@ void MainWindow::parseAndRouteNetwork(const QString& description)
 
         NodeItem* node = new NodeItem;
         node->setText(name);
-        node->setObjectName(name);
+        
+        m_graphNodes[name] = node;
         
         boost::add_vertex(NodeProperties(node), m_graph);
 
@@ -313,7 +364,7 @@ void MainWindow::parseAndRouteNetwork(const QString& description)
                     .arg(i)
                     .arg(weights.length())
                     .arg(nodeCount));
-            return;
+            return ErrorRowTooShort;
         }
 
         // Actually create the edges
@@ -341,38 +392,159 @@ void MainWindow::parseAndRouteNetwork(const QString& description)
                     .arg(i)
                     .arg(j)
                     .arg(weights[j]));
+                result |= WarningBadCell;
             }
         }
     }
 
-    // Load complete, lay it out
-    postInfoMessage("Laying out graph...");
-    applySpringLayout();
-    postSuccessMessage("Graph loaded successfully!");
-
-    // Extract the start and end points
-    postInfoMessage("Beginning routing step...");
+    // Parse the final line of the description: the start/end nodes
     QStringList nodes = lines[lines.length() - 1].split(QRegExp("\\s+"),
         QString::SkipEmptyParts);
     if (nodes.length() != 2) {
-        postErrorMessage("Start and end nodes line is malformed.");
-        return;
+        postWarningMessage("Start and end nodes line is malformed; "
+            "routing will not take place.");
+        result |= WarningBadStartEnd;
+    } else {
+        QString startNodeName = nodes[0];
+        QString endNodeName   = nodes[1];
+
+        m_routeStart = m_graphNodes[startNodeName];
+        m_routeEnd   = m_graphNodes[endNodeName];
+
+        if (!m_routeStart) {
+            postWarningMessage(QString("Failed to find start node '%1'; "
+                "routing will not take place.")
+                    .arg(startNodeName));
+            result |= WarningNoStartNode;
+        }
+
+        if (!m_routeEnd) {
+            postWarningMessage(QString("Failed to find end node '%1'; "
+                "routing will not take place.")
+                    .arg(endNodeName));
+            result |= WarningNoEndNode;
+        }
     }
 
-    QString startNodeName = nodes[0];
-    QString endNodeName   = nodes[1];
+    // Graph was built successfully, even if some parsing errors arose.
+    return result;
+}
 
-    // Complete
-    postSuccessMessage(QString("Load complete! "
-        "Routing not performed between nodes %1 and %2.")
-            .arg(startNodeName)
-            .arg(endNodeName));
+void MainWindow::routeNetwork()
+{
+    // Storage class for the metadata required by Dijkstra
+    struct MetaData {
+        int         distance;
+        EdgeItem*   edge;
+        NodeItem*   previous;
+        NodeItem*   owner;
+
+        MetaData()
+            : distance(MAXINT)
+            , edge(nullptr)
+            , previous(nullptr)
+            , owner(nullptr)
+        {
+        }
+
+        MetaData(NodeItem* owner_)
+            : distance(MAXINT)
+            , edge(nullptr)
+            , previous(nullptr)
+            , owner(owner_)
+        {
+        }
+    };
+
+    QMap<NodeItem*, MetaData>   metadata;
+    QList<NodeItem*>            nodes;
+    NodeItem*                   current;
+
+    // Initialise data-structres
+    {
+        QMapIterator<QString, NodeItem*> i(m_graphNodes);
+        while (i.hasNext()) {
+            auto item = i.next();
+
+            // Initialise the metadata
+            MetaData md(item.value());
+            if (item.value() == m_routeStart) {
+                // Need minimal distance for the start node
+                md.distance = 0;
+            }
+            metadata[i.value()] = md;
+
+            // Initialise the node list
+            nodes.append(i.value());
+        }
+    }
+
+    // Dijkstra's algorithm: calculate all the distances
+    while (!nodes.isEmpty()) {
+        // Find node with smallest distance
+        {
+            int d = MAXINT;
+            auto elem = nodes.end();
+            for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+                int thisDistance = metadata[*it].distance;
+                if (thisDistance < d) {
+                    d    = thisDistance;
+                    elem = it;
+                }
+            }
+
+            current = *elem;
+
+            // If we hit the target, we can stop
+            if (current == m_routeEnd) {
+                break;
+            } else {
+                // Emshrinken the list
+                nodes.erase(elem);
+            }
+        }
+
+        // Visit the neighbours
+        QListIterator<EdgeItem*> i(current->edges());
+        while (i.hasNext()) {
+            EdgeItem* edge      = i.next();
+            NodeItem* neighbour = edge->endNode();
+            int       dist      = metadata[current].distance + edge->weight();
+
+            if (dist < metadata[neighbour].distance) {
+                metadata[neighbour].distance = dist;
+                metadata[neighbour].edge     = edge;
+                metadata[neighbour].previous = current;
+            }
+        }
+    }
+
+    // Walk backwards from the target to the source, building the path
+    for (current = m_routeEnd; current; current = metadata[current].previous) {
+        EdgeItem* edge = metadata[current].edge;
+
+        if (edge) {
+            m_route.prepend(edge);
+        }
+    }
+
+    // Update the display
+    setHighlightStartNode(m_controlsDock->highlightStartNode());
+    setHighlightEndNode(m_controlsDock->highlightEndNode());
+    setHighlightPath(m_controlsDock->highlightPath());
+
+    // Enable the graph display controls 
+    m_controlsDock->enableGraphDisplayOptions(true);
 }
 
 void MainWindow::clearNetwork()
 {
     m_graph.clear();
     m_graphScene->clear();
+    m_graphNodes.clear();
+
+    m_route.clear();
+    m_routeStart = m_routeEnd = nullptr;
 }
 
 void MainWindow::generateRouteReport()
