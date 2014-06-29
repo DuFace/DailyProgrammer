@@ -86,6 +86,21 @@ void ControlsDockWidget::enableGenerateReport(bool enable)
     m_ui.generateReportButton->setEnabled(enable);
 }
 
+bool ControlsDockWidget::highlightStartNode() const
+{
+    return m_ui.highlightStartCheck->isChecked();
+}
+
+bool ControlsDockWidget::highlightEndNode() const
+{
+    return m_ui.highlightEndCheck->isChecked();
+}
+
+bool ControlsDockWidget::highlightPath() const
+{
+    return m_ui.highlightPathCheck->isChecked();
+}
+
 // Event handlers
 void ControlsDockWidget::problemSpecChanged()
 {

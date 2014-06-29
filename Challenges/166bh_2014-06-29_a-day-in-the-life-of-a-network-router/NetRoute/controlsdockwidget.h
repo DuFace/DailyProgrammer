@@ -26,6 +26,10 @@ public:
     bool isGenerateReportEnabled() const;
     void enableGenerateReport(bool enable);
 
+    bool highlightStartNode() const;
+    bool highlightEndNode() const;
+    bool highlightPath() const;
+
 protected slots:
     void problemSpecChanged();
     void pasteAndRouteClicked();
