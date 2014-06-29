@@ -248,47 +248,125 @@ void MainWindow::applySpringLayout()
 // Network specification stuff
 void MainWindow::parseAndRouteNetwork(const QString& description)
 {
-    postWarningMessage("Ignoring network description---generating instead.");
+    // Split into lines
+    QStringList lines = description.split(QRegExp("[\\n|\\r]"),
+        QString::SkipEmptyParts);
+    if (lines.isEmpty()) {
+        postErrorMessage("Problem specification is empty after whitespace "
+            "removed!");
+        return;
+    }
+
+    // Validate the length of the specification
+    int nodeCount = lines[0].toInt();
+    postInfoMessage(QString("Expecting %1x%1 adjacency matrix...")
+        .arg(nodeCount));
+
+    if (lines.length() != (nodeCount + 2)) {
+        postErrorMessage(QString("Expecting %1 lines in specification; read %2")
+            .arg(nodeCount + 2)
+            .arg(lines.length()));
+        return;
+    }
 
     // Clear the existing graph and scene
-    clearNetwork();
+    if (boost::num_vertices(m_graph) != 0) {
+        postWarningMessage("Existing network already loaded; must be cleared "
+            "in order to continue.");
 
-    // Split into lines
-    /*QStringList lines = description.split(QRegExp("[\\n|\\r]"),
-        QString::SkipEmptyParts);
-    int nodeCount = lines[0].toInt();*/
+        int response = QMessageBox::question(this, "NetRoute", "There is "
+            "already a graph in the explorer; the current data will have to "
+            "be discared.  Continue?");
+        if (response == QMessageBox::No) {
+            postErrorMessage("Aborted by user.");
+            return;
+        }
 
-    // Create some nodes
-    for (int i = 0; i < 10; ++i) {
+        postInfoMessage("Discarding network.");
+        clearNetwork();
+    }
+
+    // Create the nodes
+    postInfoMessage("Creating nodes...");
+    for (int i = 0; i < nodeCount; ++i) {
+        QString name = QString("%1").arg(QChar('A' + i));
+
         NodeItem* node = new NodeItem;
-        node->setText(QString("N%1").arg(i + 1));
+        node->setText(name);
+        node->setObjectName(name);
         
         boost::add_vertex(NodeProperties(node), m_graph);
 
         m_graphScene->addItem(node);
     }
 
-    // Create random connections
-    RandomNumberGenerator rng(QDateTime::currentMSecsSinceEpoch());
-    RandomIterator it (rng, 10, 0.25);
-    RandomIterator end;
-    for (; it != end; it++) {
-        DigraphVertex vStart = boost::vertex(it->first, m_graph);
-        DigraphVertex vEnd   = boost::vertex(it->second, m_graph);
+    // Create the edges
+    postInfoMessage("Creating edges from adjacency matrix...");
+    for (int i = 0; i < nodeCount; ++i) {
+        QString     line    = lines[i + 1].trimmed();
+        QStringList weights = line.split(',', QString::SkipEmptyParts);
 
-        // Create a new edge item
-        EdgeItem* edge = new EdgeItem;
-        edge->setStartNode(m_graph[vStart].item);
-        edge->setEndNode(m_graph[vEnd].item);
-        edge->setWeight(qrand() % 16);
-        m_graphScene->addItem(edge);
+        // Sanity check
+        if (weights.length() != nodeCount) {
+            postErrorMessage(
+                QString("Matrix row %1 has %2 columns; expecting %3.")
+                    .arg(i)
+                    .arg(weights.length())
+                    .arg(nodeCount));
+            return;
+        }
 
-        // Add it to the graph
-        boost::add_edge(vStart, vEnd, EdgeProperties(edge), m_graph);
+        // Actually create the edges
+        postInfoMessage(QString("Creating edges for node %1")
+            .arg(QChar('A' + i)));
+        DigraphVertex vStart = boost::vertex(i, m_graph);
+        for (int j = 0; j < nodeCount; ++j) {
+            bool ok;
+            int weight = weights[j].trimmed().toInt(&ok);
+
+            if (ok && weight >= 0) {
+                DigraphVertex vEnd = boost::vertex(j, m_graph);
+
+                // Create the new edge item
+                EdgeItem* edge = new EdgeItem;
+                edge->setStartNode(m_graph[vStart].item);
+                edge->setEndNode(m_graph[vEnd].item);
+                edge->setWeight(weight);
+                m_graphScene->addItem(edge);
+
+                // Add it to the graph
+                boost::add_edge(vStart, vEnd, EdgeProperties(edge), m_graph);
+            } else if (!ok) {
+                postWarningMessage(QString("Weight (%1,%2) is malformed: %3.")
+                    .arg(i)
+                    .arg(j)
+                    .arg(weights[j]));
+            }
+        }
     }
 
-    // Apply a random layout
-    applyRandomLayout();
+    // Load complete, lay it out
+    postInfoMessage("Laying out graph...");
+    applySpringLayout();
+    postSuccessMessage("Graph loaded successfully!");
+
+    // Extract the start and end points
+    postInfoMessage("Beginning routing step...");
+    QStringList nodes = lines[lines.length() - 1].split(QRegExp("\\s+"),
+        QString::SkipEmptyParts);
+    if (nodes.length() != 2) {
+        postErrorMessage("Start and end nodes line is malformed.");
+        return;
+    }
+
+    QString startNodeName = nodes[0];
+    QString endNodeName   = nodes[1];
+
+    // Complete
+    postSuccessMessage(QString("Load complete! "
+        "Routing not performed between nodes %1 and %2.")
+            .arg(startNodeName)
+            .arg(endNodeName));
 }
 
 void MainWindow::clearNetwork()
