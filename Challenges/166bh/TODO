@@ -1,6 +1,6 @@
 Essential Tasks:
   ☐ Add README and license
-  ☐ Implement the task report generation
+  ✔ Implement the task report generation @done (14-06-30 17:10)
   ☐ Refactor code to use a consistent style
   ☐ Add licence header to each file
 

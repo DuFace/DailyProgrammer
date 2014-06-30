@@ -605,6 +605,32 @@ void MainWindow::clearNetwork()
 
 void MainWindow::generateRouteReport()
 {
-    postErrorMessage("Route generation not yet implemented.");
+    int     totalCost = 0;
+    QString route;
+
+    // Check a route actually exists
+    if (m_route.isEmpty() || !m_routeStart || !m_routeEnd) {
+        postErrorMessage("Route has not been built.");
+        return;
+    }
+
+    // Seed the route with the start node
+    route = m_routeStart->text();
+
+    // Iterate over the route list updating the variables above
+    QListIterator<EdgeItem*> i(m_route);
+    while (i.hasNext()) {
+        EdgeItem* edge = i.next();
+
+        // Add the target to the route
+        route += edge->endNode()->text();
+
+        // Update the cost
+        totalCost += edge->weight();
+    }
+
+    // Print the result
+    postInfoMessage(QString("Total route cost: %1").arg(totalCost));
+    postInfoMessage(QString("Route taken:      %1").arg(route));
 }
 
