@@ -24,8 +24,8 @@ class NodeItem : public QGraphicsObject
     Q_PROPERTY(QString text READ text WRITE setText)
 
 public:
-    Q_INVOKABLE NodeItem (QGraphicsItem* parent = NULL);
-    virtual ~NodeItem ();
+    Q_INVOKABLE NodeItem(QGraphicsItem* parent = nullptr);
+    virtual ~NodeItem();
 
     static const float Radius;
     static const float Border;
@@ -34,30 +34,30 @@ public:
     enum { Type = UserType + 1 };
 
     // properties
-    QList<EdgeItem*> edges () const { return m_edges; }
+    QList<EdgeItem*> edges() const { return m_edges; }
 
-    QBrush background () const { return m_brush; }
-    void setBackground (QBrush brush);
-    void resetBackground ();
+    QBrush background() const { return m_brush; }
+    void setBackground(QBrush brush);
+    void resetBackground();
 
-    QPen borderPen () const { return m_penBorder; }
-    void setBorderPen (QPen pen);
-    void resetBorderPen ();
+    QPen borderPen() const { return m_penBorder; }
+    void setBorderPen(QPen pen);
+    void resetBorderPen();
 
-    QPen selectionPen () const { return m_penSelect; }
-    void setSelectionPen (QPen pen);
-    void resetSelectionPen ();
+    QPen selectionPen() const { return m_penSelect; }
+    void setSelectionPen(QPen pen);
+    void resetSelectionPen();
 
-    QPen textPen () const { return m_penText; }
-    void setTextPen (QPen pen);
-    void resetTextPen ();
+    QPen textPen() const { return m_penText; }
+    void setTextPen(QPen pen);
+    void resetTextPen();
 
-    QFont font () const { return m_font; }
-    void setFont (QFont font);
-    void resetFont ();
+    QFont font() const { return m_font; }
+    void setFont(QFont font);
+    void resetFont();
 
-    QString text () const { return m_text; }
-    void setText (const QString& text);
+    QString text() const { return m_text; }
+    void setText(const QString& text);
 
     QBrush emphasisBrush() const { return m_emphBrush; }
     void setEmphasisBrush(QBrush brush);
@@ -66,28 +66,28 @@ public:
     bool isEmphasised() const { return m_emphasised; }
     void setEmphasised(bool emph);
 
-    virtual int type () const { return Type; }
-    virtual QRectF boundingRect () const;
+    virtual int type() const { return Type; }
+    virtual QRectF boundingRect() const;
 
     // methods
-    void addEdge (EdgeItem* edge);
-    void removeEdge (EdgeItem* edge);
+    void addEdge(EdgeItem* edge);
+    void removeEdge(EdgeItem* edge);
 
 signals:
-    void nodeItemDoubleClicked (NodeItem* node);
+    void nodeItemDoubleClicked(NodeItem* node);
 
 protected:
-    virtual void paint (QPainter* painter, const QStyleOptionGraphicsItem* option,
-        QWidget* widget = NULL);
+    virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
+        QWidget* widget = nullptr);
 
-    virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
-    virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
-    virtual void mouseDoubleClickEvent (QGraphicsSceneMouseEvent* event);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event);
 
-    virtual QVariant itemChange (QGraphicsItem::GraphicsItemChange change,
+    virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange change,
         const QVariant& value);
 
-    void invalidate ();
+    void invalidate();
 
 private:
     QList<EdgeItem*>    m_edges;

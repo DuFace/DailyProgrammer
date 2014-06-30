@@ -28,7 +28,7 @@ struct NodeProperties
     TopologicalPoint pos;
     NodeItem*   item;
 
-    NodeProperties(NodeItem* item_ = NULL)
+    NodeProperties(NodeItem* item_ = nullptr)
         : item(item_)
     {
         // Initialise the point
@@ -43,7 +43,7 @@ struct EdgeProperties
     float       weight;
     EdgeItem*   item;
 
-    EdgeProperties(EdgeItem* item_ = NULL, float weight_ = 0.0f)
+    EdgeProperties(EdgeItem* item_ = nullptr, float weight_ = 0.0f)
         : weight(weight_)
         , item(item_)
     {

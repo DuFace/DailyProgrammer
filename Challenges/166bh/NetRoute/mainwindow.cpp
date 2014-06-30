@@ -41,8 +41,8 @@ public:
             m_currentIteration += 1;
 
             // Do the normal thing
-            return boost::layout_tolerance<T>::operator ()(delta_p, p, g,
-                                                           global);
+            return boost::layout_tolerance<T>::operator()(delta_p, p, g,
+                                                          global);
         } else {
             // Skip out early
             return true;
@@ -331,7 +331,7 @@ void MainWindow::parseAndRouteNetwork(const QString& description)
             m_controlsDock->enableGenerateReport(true);
         } else {
             // Make sure the route does not exist
-            m_routeStart = m_routeEnd = NULL;
+            m_routeStart = m_routeEnd = nullptr;
             m_route.clear();
 
             // Disable the UI stuff that depends on the route being generated
