@@ -15,3 +15,4 @@
 
 # Qt stuff
 **/GeneratedFiles/*
+**/build-*Qt*/*
