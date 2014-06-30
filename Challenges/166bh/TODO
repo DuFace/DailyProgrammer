@@ -1,0 +1,11 @@
+Essential Tasks:
+  ☐ Add README and license
+  ☐ Implement the task report generation
+  ☐ Refactor code to use a consistent style
+  ☐ Add licence header to each file
+
+Vanity Tasks:
+  ☐ Add more debug messages to routing step
+  ☐ Fix the edge rendering bug
+  ☐ Add another button to clear specification
+ 
