@@ -1,8 +1,8 @@
 #include <QtGui/QPainter>
 #include <QtWidgets/QApplication>
 
-#include "EdgeItem.h"
-#include "NodeItem.h"
+#include "edgeitem.h"
+#include "nodeitem.h"
 
 const float NodeItem::Radius    = 20.0f;
 const float NodeItem::Border    =  2.0f;
@@ -60,6 +60,12 @@ void NodeItem::resetEmphasisBrush()
     g.setColorAt(0.50f, QColor(Qt::gray));
     g.setColorAt(0.75f, QColor(255, 255, 255, 0));
     m_emphBrush = g;
+}
+
+void NodeItem::setEmphasised(bool emph)
+{
+    m_emphasised = emph;
+    update();
 }
 
 void NodeItem::setBorderPen (QPen pen)

@@ -1,8 +1,8 @@
 #include <QtGui/QPainter>
 #include <QtWidgets/QApplication>
 
-#include "EdgeItem.h"
-#include "NodeItem.h"
+#include "edgeitem.h"
+#include "nodeitem.h"
 
 const float EdgeItem::ArrowBase   =  6.0f;
 const float EdgeItem::ArrowHeight = 10.0f;

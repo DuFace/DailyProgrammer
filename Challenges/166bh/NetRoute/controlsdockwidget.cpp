@@ -6,7 +6,9 @@
 #include "mainwindow.h"
 
 ControlsDockWidget::ControlsDockWidget(MainWindow* parent) :
-    QDockWidget(parent)
+    QDockWidget(parent),
+    m_graphDisplayEnabled(false),
+    m_graphLayoutEnabled(false)
 {
     m_ui.setupUi(this);
 
@@ -58,12 +60,27 @@ ControlsDockWidget::~ControlsDockWidget()
 // Properties
 bool ControlsDockWidget::areGraphDisplayOptionsEnabled() const
 {
-    return m_ui.displayGroup->isEnabled();
+    return m_graphDisplayEnabled;
 }
 
 void ControlsDockWidget::enableGraphDisplayOptions(bool enable)
 {
-    m_ui.displayGroup->setEnabled(enable);
+    m_graphDisplayEnabled = enable;
+    m_ui.highlightEndCheck->setEnabled(enable);
+    m_ui.highlightPathCheck->setEnabled(enable);
+    m_ui.highlightStartCheck->setEnabled(enable);
+}
+
+bool ControlsDockWidget::areGraphLayoutOptionsEnabled() const
+{
+    return m_graphLayoutEnabled;
+}
+
+void ControlsDockWidget::enableGraphLayoutOptions(bool enable)
+{
+    m_graphDisplayEnabled = enable;
+    m_ui.randomLayoutButton->setEnabled(enable);
+    m_ui.springLayoutButton->setEnabled(enable);
 }
 
 bool ControlsDockWidget::isClearNetworkEnabled() const
@@ -99,6 +116,16 @@ bool ControlsDockWidget::highlightEndNode() const
 bool ControlsDockWidget::highlightPath() const
 {
     return m_ui.highlightPathCheck->isChecked();
+}
+
+int ControlsDockWidget::maxIterations() const
+{
+    return m_ui.maxIterationsSpinner->value();
+}
+
+double ControlsDockWidget::layoutTolerance() const
+{
+    return m_ui.layoutToleranceSpinner->value();
 }
 
 // Event handlers

@@ -20,6 +20,9 @@ public:
     bool areGraphDisplayOptionsEnabled() const;
     void enableGraphDisplayOptions(bool enable);
 
+    bool areGraphLayoutOptionsEnabled() const;
+    void enableGraphLayoutOptions(bool enable);
+
     bool isClearNetworkEnabled() const;
     void enableClearNetwork(bool enable);
 
@@ -29,6 +32,9 @@ public:
     bool highlightStartNode() const;
     bool highlightEndNode() const;
     bool highlightPath() const;
+
+    int  maxIterations() const;
+    double layoutTolerance() const;
 
 protected slots:
     void problemSpecChanged();
@@ -40,7 +46,10 @@ signals:
     void parseRequested(const QString& description);
 
 private:
-    Ui::ControlsDockWidget m_ui;
+    Ui::ControlsDockWidget  m_ui;
+
+    bool                    m_graphDisplayEnabled;
+    bool                    m_graphLayoutEnabled;
 };
 
 

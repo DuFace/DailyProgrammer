@@ -64,7 +64,7 @@ public:
     void resetEmphasisBrush();
 
     bool isEmphasised() const { return m_emphasised; }
-    void setEmphasised(bool emph) { m_emphasised = emph; }
+    void setEmphasised(bool emph);
 
     virtual int type () const { return Type; }
     virtual QRectF boundingRect () const;

@@ -1,3 +1,4 @@
+#include <climits>
 #include <queue>
 
 #include <QtCore/QDateTime>
@@ -11,10 +12,46 @@
 #include "nodeitem.h"
 #include "edgeitem.h"
 
+// Graph helpers and stuff
 typedef boost::detail::constant_value_property_map<double>
     ConstantValueDoubleMap;
 
+template <typename T = double>
+class MaxIterationsLayoutTolerance : public boost::layout_tolerance<T>
+{
+    int m_currentIteration;
+    int m_maxIterations;
 
+public:
+    MaxIterationsLayoutTolerance(int maxIterations, const T& t = T(0.001)) :
+        boost::layout_tolerance<T>(t),
+        m_currentIteration(0),
+        m_maxIterations(maxIterations)
+    {
+    }
+
+    // Actual function we care about
+    template <typename Graph>
+    bool operator()(T delta_p,
+                    typename boost::graph_traits< Graph >::vertex_descriptor p,
+                    const Graph & g,
+                    bool global)
+    {
+        if (m_currentIteration < m_maxIterations) {
+            m_currentIteration += 1;
+
+            // Do the normal thing
+            return boost::layout_tolerance<T>::operator ()(delta_p, p, g,
+                                                           global);
+        } else {
+            // Skip out early
+            return true;
+        }
+    }
+};
+
+
+// MainWindow implementation
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_highlightPath(true)
@@ -61,8 +98,6 @@ MainWindow::MainWindow(QWidget *parent)
         QDockWidget::DockWidgetFloatable);
     m_controlsDock->setAllowedAreas(Qt::LeftDockWidgetArea |
         Qt::RightDockWidgetArea);
-
-    m_controlsDock->enableGraphDisplayOptions(true);
 
     addDockWidget(Qt::RightDockWidgetArea, m_controlsDock);
 
@@ -237,13 +272,17 @@ void MainWindow::applySpringLayout()
 
     Topology top(rng, rc.left(), rc.top(), rc.right(), rc.bottom());
 
+    MaxIterationsLayoutTolerance<double> done(
+                boost::num_vertices(m_graph) * m_controlsDock->maxIterations(),
+                m_controlsDock->layoutTolerance());
+
     // Seed with a random layout
     boost::random_graph_layout(g, get(&NodeProperties::pos, g), top);
 
     // Now apply the force-directed layout
-    boost::kamada_kawai_spring_layout(g, 
+    boost::kamada_kawai_spring_layout(g,
         get(&NodeProperties::pos, g), weights, top,
-        boost::side_length(rc.width()));
+        boost::side_length(rc.width()), done);
 
     // Forward the calculated values into the graphics objects
     std::pair<GraphVertexIterator, GraphVertexIterator> iterators =
@@ -278,17 +317,29 @@ void MainWindow::parseAndRouteNetwork(const QString& description)
         applySpringLayout();
         postSuccessMessage("Graph loaded successfully!");
 
+        // Enable the UI
+        m_controlsDock->enableClearNetwork(true);
+        m_controlsDock->enableGraphLayoutOptions(true);
+
         // Extract the start and end points
         if (buildResult == Success) {
             postInfoMessage("Beginning routing step...");
             routeNetwork();
+
+            // Enable the graph display controls and the report generator
+            m_controlsDock->enableGraphDisplayOptions(true);
+            m_controlsDock->enableGenerateReport(true);
         } else {
             // Make sure the route does not exist
             m_routeStart = m_routeEnd = NULL;
             m_route.clear();
 
+            // Disable the UI stuff that depends on the route being generated
+            m_controlsDock->enableGraphDisplayOptions(false);
+            m_controlsDock->enableGenerateReport(false);
+
             // Inform the user
-            postErrorMessage("Skipping routing step due to warnings.");
+            postErrorMessage("Routing skipped step due to warnings.");
         }
     }
 
@@ -440,7 +491,7 @@ void MainWindow::routeNetwork()
         NodeItem*   owner;
 
         MetaData()
-            : distance(MAXINT)
+            : distance(INT_MAX)
             , edge(nullptr)
             , previous(nullptr)
             , owner(nullptr)
@@ -448,7 +499,7 @@ void MainWindow::routeNetwork()
         }
 
         MetaData(NodeItem* owner_)
-            : distance(MAXINT)
+            : distance(INT_MAX)
             , edge(nullptr)
             , previous(nullptr)
             , owner(owner_)
@@ -483,7 +534,7 @@ void MainWindow::routeNetwork()
     while (!nodes.isEmpty()) {
         // Find node with smallest distance
         {
-            int d = MAXINT;
+            int d = INT_MAX;
             auto elem = nodes.end();
             for (auto it = nodes.begin(); it != nodes.end(); ++it) {
                 int thisDistance = metadata[*it].distance;
@@ -532,22 +583,28 @@ void MainWindow::routeNetwork()
     setHighlightStartNode(m_controlsDock->highlightStartNode());
     setHighlightEndNode(m_controlsDock->highlightEndNode());
     setHighlightPath(m_controlsDock->highlightPath());
-
-    // Enable the graph display controls 
-    m_controlsDock->enableGraphDisplayOptions(true);
 }
 
 void MainWindow::clearNetwork()
 {
+    // Clear the graph datastructures
     m_graph.clear();
     m_graphScene->clear();
     m_graphNodes.clear();
 
+    // Clear the route-related stuff
     m_route.clear();
     m_routeStart = m_routeEnd = nullptr;
+
+    // Update the UI
+    m_controlsDock->enableClearNetwork(false);
+    m_controlsDock->enableGenerateReport(false);
+    m_controlsDock->enableGraphDisplayOptions(false);
+    m_controlsDock->enableGraphLayoutOptions(false);
 }
 
 void MainWindow::generateRouteReport()
 {
+    postErrorMessage("Route generation not yet implemented.");
 }
 
