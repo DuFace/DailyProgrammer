@@ -6,6 +6,9 @@ Essential Tasks:
 
 Vanity Tasks:
   ☐ Add more debug messages to routing step
-  ☐ Fix the edge rendering bug
+  ✔ Fix the edge rendering bug @done (14-06-30 23:46)
   ☐ Add another button to clear specification
+  ☐ Change the start node highlighting
+  ☐ Change the end node highlighting
+  
  

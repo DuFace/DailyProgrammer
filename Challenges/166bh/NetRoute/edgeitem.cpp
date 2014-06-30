@@ -106,8 +106,17 @@ void EdgeItem::resetFont ()
 
 QRectF EdgeItem::boundingRect () const
 {
-    return QRectF (-m_line.dx () / 2.0f, -m_line.dy () / 2.0f,
-        m_line.dx (), m_line.dy ());
+    // Calculate the bounding box for the line itself
+    float dx = qAbs(m_line.dx());
+    float dy = qAbs(m_line.dy());
+    QRectF rcLine(-dx / 2.0f, -dy / 2.0f, dx, dy);
+
+    // Factor in the label
+    return QRectF(
+        qMin(rcLine.left(), m_labelRect.left() - LabelOffset),
+        qMin(rcLine.top(), m_labelRect.top() - LabelOffset),
+        qMax(rcLine.width(), m_labelRect.width() + 2*LabelOffset),
+        qMax(rcLine.height(), m_labelRect.height() + 2*LabelOffset));
 }
 
 void EdgeItem::adjust ()
