@@ -524,6 +524,7 @@ void MainWindow::routeNetwork()
     NodeItem*                   current;
 
     // Initialise data-structres
+    postInfoMessage("Preparing to route...");
     {
         QMapIterator<QString, NodeItem*> i(m_graphNodes);
         while (i.hasNext()) {
@@ -560,12 +561,16 @@ void MainWindow::routeNetwork()
 
             // If we hit the target, we can stop
             if (current == m_routeEnd) {
+                postInfoMessage("Search complete; reached target node!");
                 break;
             } else {
                 // Emshrinken the list
                 nodes.erase(elem);
             }
         }
+
+        postInfoMessage(QString("Considering node %1...")
+                .arg(current->text()));
 
         // Visit the neighbours
         QListIterator<EdgeItem*> i(current->edges());
@@ -583,6 +588,7 @@ void MainWindow::routeNetwork()
     }
 
     // Walk backwards from the target to the source, building the path
+    postInfoMessage("Back-tracking to construct route...");
     for (current = m_routeEnd; current; current = metadata[current].previous) {
         EdgeItem* edge = metadata[current].edge;
 
@@ -590,6 +596,9 @@ void MainWindow::routeNetwork()
             m_route.prepend(edge);
         }
     }
+
+    // All done!
+    postSuccessMessage("Routing complete!");
 
     // Update the display
     setHighlightStartNode(m_controlsDock->highlightStartNode());
