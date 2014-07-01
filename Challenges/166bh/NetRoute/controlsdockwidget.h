@@ -1,3 +1,10 @@
+/*
+ * Copyright © 2014 Kier Dugan.  All Rights Reserved.
+ *
+ * This source code is covered by the MIT licence as set out in the LICENSE
+ * file at the root of this repository.
+ */
+
 #ifndef CONTROLSDOCKWIDGET_H
 #define CONTROLSDOCKWIDGET_H
 
