@@ -35,6 +35,9 @@ ControlsDockWidget::ControlsDockWidget(MainWindow* parent) :
         &ControlsDockWidget::pasteAndRouteClicked);
     connect(m_ui.routeButton, &QPushButton::clicked, this,
         &ControlsDockWidget::routeClicked);
+    connect(m_ui.clearSpecButton, &QPushButton::clicked, [this] () {
+        m_ui.problemSpecEdit->clear();
+    });
     connect(m_ui.clearNetworkButton, &QPushButton::clicked, parent,
         &MainWindow::clearNetwork);
     connect(m_ui.generateReportButton, &QPushButton::clicked, parent,
@@ -131,7 +134,10 @@ double ControlsDockWidget::layoutTolerance() const
 // Event handlers
 void ControlsDockWidget::problemSpecChanged()
 {
-    m_ui.routeButton->setEnabled(!m_ui.problemSpecEdit->document()->isEmpty());
+    bool enable = !m_ui.problemSpecEdit->document()->isEmpty();
+
+    m_ui.routeButton->setEnabled(enable);
+    m_ui.clearSpecButton->setEnabled(enable);
 }
 
 void ControlsDockWidget::pasteAndRouteClicked()
