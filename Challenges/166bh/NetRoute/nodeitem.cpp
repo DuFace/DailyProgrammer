@@ -34,7 +34,7 @@ NodeItem::~NodeItem()
 void NodeItem::resetBackground()
 {
     QLinearGradient g(-Radius, -Radius, Radius / 2, Radius / 2);
-    g.setColorAt(0, QColor(0, 255, 0));
+    g.setColorAt(0, QColor(  0, 135, 255));
     g.setColorAt(1, QColor(255, 255, 255));
     m_brush = g;
 }
@@ -76,7 +76,8 @@ void NodeItem::setBorderPen(QPen pen)
 
 void NodeItem::resetBorderPen()
 {
-    m_penBorder = QPen(QBrush(Qt::darkGray), Border);
+    QBrush b(QColor(0, 85, 255));
+    m_penBorder = QPen(b, Border);
 }
 
 void NodeItem::setSelectionPen(QPen pen)

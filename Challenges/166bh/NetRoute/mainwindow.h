@@ -74,6 +74,10 @@ private:
     void postMessage(const QString& htmlColour, const QString& leader,
         const QString& msg);
 
+    void setStartNodeStyle(NodeItem* node);
+    void setEndNodeStyle(NodeItem* node);
+    void clearNodeStyle(NodeItem* node);
+
 private:
     Ui::MainWindowClass m_ui;
 

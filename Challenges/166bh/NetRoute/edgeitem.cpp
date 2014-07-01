@@ -87,7 +87,7 @@ void EdgeItem::setEmphasisPen(QPen emphPen)
 
 void EdgeItem::resetEmphasisPen()
 {
-    QBrush b(QColor(255, 255, 0, 192));
+    QBrush b(QColor(104, 222, 255, 64));
     QPen p(b, 12.0f, Qt::SolidLine, Qt::RoundCap);
     m_emphPen = p;
 }
@@ -156,7 +156,9 @@ void EdgeItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
     }
 
     // draw the line
-    QPen p(Qt::blue, LineWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+    //QBrush b(QColor(18, 228, 18));
+    QBrush b(QColor(0, 199, 255));
+    QPen p(b, LineWidth, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
     painter->setPen(p);
     painter->drawLine(m_line);
 

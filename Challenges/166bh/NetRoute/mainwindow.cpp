@@ -122,6 +122,12 @@ void MainWindow::setHighlightStartNode(bool highlight)
 {
     if (m_routeStart) {
         m_routeStart->setEmphasised(highlight);
+
+        if (highlight) {
+            setStartNodeStyle(m_routeStart);
+        } else {
+            clearNodeStyle(m_routeStart);
+        }
     }
 }
 
@@ -137,6 +143,12 @@ void MainWindow::setHighlightEndNode(bool highlight)
 {
     if (m_routeEnd) {
         m_routeEnd->setEmphasised(highlight);
+
+        if (highlight) {
+            setEndNodeStyle(m_routeEnd);
+        } else {
+            clearNodeStyle(m_routeEnd);
+        }
     }
 }
 
@@ -634,3 +646,51 @@ void MainWindow::generateRouteReport()
     postInfoMessage(QString("Route taken:      %1").arg(route));
 }
 
+// Graph appearance stuff
+void MainWindow::setStartNodeStyle(NodeItem* node)
+{
+    // Change the background style
+    QLinearGradient bkgnd(-NodeItem::Radius, -NodeItem::Radius,
+        NodeItem::Radius / 2, NodeItem::Radius / 2);
+    bkgnd.setColorAt(0, QColor(255,   0,   0));
+    bkgnd.setColorAt(1, QColor(255, 255, 255));
+    node->setBackground(bkgnd);
+
+    // Change the border pen
+    QBrush brdr(QColor(181, 0, 60));
+    node->setBorderPen(QPen(brdr, NodeItem::Border));
+
+    // Change the emphasis
+    QRadialGradient emph(0, 0, NodeItem::Radius + 2 * NodeItem::EmphWidth);
+    emph.setColorAt(0.50f, QColor(255, 112, 126, 192));
+    emph.setColorAt(0.75f, QColor(255, 255, 255,   0));
+    node->setEmphasisBrush(emph);
+}
+
+void MainWindow::setEndNodeStyle(NodeItem* node)
+{
+    // Change the background style
+    QLinearGradient bkgnd(-NodeItem::Radius, -NodeItem::Radius,
+        NodeItem::Radius / 2, NodeItem::Radius / 2);
+    bkgnd.setColorAt(0, QColor(  0, 255,  38));
+    bkgnd.setColorAt(1, QColor(255, 255, 255));
+    node->setBackground(bkgnd);
+
+    // Change the border pen
+    QBrush brdr(QColor(19, 174, 28));
+    node->setBorderPen(QPen(brdr, NodeItem::Border));
+
+    // Change the emphasis
+    QRadialGradient emph(0, 0, NodeItem::Radius + 2 * NodeItem::EmphWidth);
+    emph.setColorAt(0.50f, QColor(109, 255, 116, 192));
+    emph.setColorAt(0.75f, QColor(255, 255, 255,   0));
+    node->setEmphasisBrush(emph);
+}
+
+void MainWindow::clearNodeStyle(NodeItem* node)
+{
+    // Reset the affected properties
+    node->resetBackground();
+    node->resetBorderPen();
+    node->resetEmphasisBrush();
+}
