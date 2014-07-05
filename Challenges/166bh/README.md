@@ -1,7 +1,7 @@
 A Day in the Life of a Network Router
 =====================================
 
-A visual solution to [DailyProgrammer][db_subreddit] challenge [#166bh][spec].
+A visual solution to [DailyProgrammer][dp_subreddit] challenge [#166bh][spec].
 
 ![Solved network in NetRoute](screenshot.png)
 
