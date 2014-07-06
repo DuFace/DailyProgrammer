@@ -32,3 +32,5 @@ in a Qt5 GUI application.
 [dp_subreddit]: http://www.reddit.com/r/dailyprogrammer/
 [qt_proj]:      http://qt-project.org/
 [boost_graph]:  http://www.boost.org/libs/graph/doc/
+
+[dp166bh]:      http://www.reddit.com/r/dailyprogrammer/comments/287jxh/6152014_challenge_166b_hard_a_day_in_the_life_of/
