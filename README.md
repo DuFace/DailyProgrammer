@@ -10,7 +10,7 @@ If something particularly cool comes out of a challenge, it may end up in the
 Challenges Completed
 --------------------
 
-### [A Day in the Lift of a Network Router][dp166bh]
+### [A Day in the Life of a Network Router][dp166bh]
 
 Find the shortest path through a given network and display the result visually
 in a Qt5 GUI application.
