@@ -58,7 +58,7 @@ level `NetRoute.pro` in QtCreator and click run.
 2.  Install the Qt5 SDK and the Qt VS2013 Addin
 3.  Open `NetRoute.sln` and click run.
 
-There's a weird issue in VS2013 where macros must specified in the
+There's a weird issue in VS2013 where macros specified in the
 `*.vcxproj.user` file must appear before they're referenced.  After
 `NetRoute.sln` is opened, you must specify a Qt target version to use (choose
 Qt5.3 with OpenGL) and this will add `QTDIR` to your `NetRoute.vcxproj.user`
